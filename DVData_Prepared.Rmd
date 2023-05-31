@@ -1,0 +1,149 @@
+---
+title: "Data Preparation"
+author: '2207479'
+date: "2023-03-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Install and Import required libraries
+
+```{r}
+install.packages("dplyr")
+#install.packages("validate")
+library(validate)
+library(dplyr)
+
+```
+
+# Data Cleaning and Preparation
+
+
+
+## Data Quality Checking
+
+
+## Eyeball the data
+
+
+## Importing the data set into R
+```{r}
+Data <- read.csv("vehicles.csv")
+```
+
+```{r}
+summary(Data)
+str(Data)
+head(Data,100)
+tail(Data, 100)
+View(Data)
+
+```
+
+
+### Exploring and checking the data more systematically.
+
+```{r}
+                data.rules <- validator(
+                  Str.region = is.factor(region),
+                  Str.manufacturer = is.factor(manufacturer),
+                  Str.condition = is.factor(condition),
+                  Str.state = is.factor(state),
+                  Res.odometer = odometer >= 0,
+                  Res.Min.price = price > 3000,
+                  Res.Max.price = price < 50000,
+                  Res.year = year> 0
+                )
+
+
+```
+
+
+### Checking the result of validator Numerically and Graphically.
+```{r}
+data.check <- confront(Data, data.rules)
+summary(data.check)
+```
+
+
+```{r}
+barplot(data.check, xlab = "")
+
+```
+
+
+I noticed some missing values denoted by 'NA' and some zero values after checking the data. Before beginning any analysis, it is critical to clean the data by either imputing missing values or removing them.
+
+
+
+# Data Cleaning
+
+## Removimg outliers
+```{r}
+library(dplyr)
+# Filter the price variable
+df_filtered <- subset(Data, price >= 3000 & price <= 100000)
+
+# View the filtered data
+summary(df_filtered)
+
+```
+
+
+
+
+
+## Removing unnecessary columns to reduce the size of the dataset
+```{r}
+Data_ReducedSize <- subset(df_filtered, select = -c(id, url,region_url,cylinders,title_status,transmission,VIN,drive,size,type,paint_color,image_url,description,county,posting_date ))
+
+```
+
+```{r}
+summary(Data_ReducedSize)
+str(Data_ReducedSize)
+```
+
+
+# Deleting missing values denoted by 'NA'
+```{r}
+Data_ReducedSize[Data_ReducedSize  == ""] <- NA
+
+# Remove missing values
+Data_Clean <- na.omit(Data_ReducedSize)
+# Eyeball the cleaned dataset
+summary(Data_Clean)
+View(Data_Clean)
+```
+## Fixing the format of categorical variables
+```{r}
+Data_Clean$region <- as.factor(Data_Clean$region)
+Data_Clean$manufacturer <- as.factor(Data_Clean$manufacturer)
+Data_Clean$model <- as.factor(Data_Clean$model)
+Data_Clean$condition <- as.factor(Data_Clean$condition)
+Data_Clean$fuel <- as.factor(Data_Clean$fuel)
+Data_Clean$state <- as.factor(Data_Clean$state)
+
+```
+
+
+```{r}
+summary(Data_Clean)
+```
+
+As we can see from the summary function result, the data is clean and ready to be used.
+
+
+# Save the final dataset as a CSV file to be used in Tableau
+```{r}
+write.csv(Data_Clean, file = "UsedCarData_Prepared.csv", row.names = FALSE)
+
+```
+
+
+
+
+
